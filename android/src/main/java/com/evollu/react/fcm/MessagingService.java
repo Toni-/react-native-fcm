@@ -1,6 +1,7 @@
 package com.evollu.react.fcm;
 
 import java.util.Map;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,11 +19,32 @@ public class MessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "Remote message received");
-        Intent i = new Intent("com.evollu.react.fcm.ReceiveNotification");
-        i.putExtra("data", remoteMessage);
-        handleBadge(remoteMessage);
-        buildLocalNotification(remoteMessage);
-        sendOrderedBroadcast(i, null);
+
+        if (AppIsRunningSingleton.getInstance().isAppRunning()) {
+            Intent i = new Intent("com.evollu.react.fcm.ReceiveNotification");
+            i.putExtra("data", remoteMessage);
+            handleBadge(remoteMessage);
+            buildLocalNotification(remoteMessage);
+            sendOrderedBroadcast(i, null);
+        } else {
+            Map<String, String> data = remoteMessage.getData();
+
+            if (data.get("type").equalsIgnoreCase("dm")) {
+                String title = data.get("sender_user_name");
+                String id = data.get("sender_user_id");
+                String message = data.get("message");
+                String type = data.get("type");
+
+                Util.buildNotification(getApplicationContext(), title, id, message, type);
+            } else if (data.get("type").equalsIgnoreCase("team_mention")) {
+                String title = data.get("team_name");
+                String id = data.get("team_id");
+                String message = data.get("message");
+                String type = data.get("type");
+
+                Util.buildNotification(getApplicationContext(), title, id, message, type);
+            }
+        }
     }
 
     public void handleBadge(RemoteMessage remoteMessage) {

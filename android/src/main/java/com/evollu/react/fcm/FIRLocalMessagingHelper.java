@@ -106,26 +106,7 @@ public class FIRLocalMessagingHelper {
                     notification.setPriority(NotificationCompat.PRIORITY_DEFAULT);
             }
 
-            //icon
-            String smallIcon = bundle.getString("icon", "ic_launcher");
-            int smallIconResId = res.getIdentifier(smallIcon, "mipmap", packageName);
-            notification.setSmallIcon(smallIconResId);
-
-            //large icon
-            String largeIcon = bundle.getString("large-icon");
-            if(largeIcon != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP){
-                if (largeIcon.startsWith("http://") || largeIcon.startsWith("https://")) {
-                    Bitmap bitmap = getBitmapFromURL(largeIcon);
-                    notification.setLargeIcon(bitmap);
-                } else {
-                    int largeIconResId = res.getIdentifier(largeIcon, "mipmap", packageName);
-                    Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
-
-                    if (largeIconResId != 0) {
-                        notification.setLargeIcon(largeIconBitmap);
-                    }
-                }
-            }
+            notification.setSmallIcon(R.drawable.ic_notification);
 
             //big text
             String bigText = bundle.getString("big_text");
