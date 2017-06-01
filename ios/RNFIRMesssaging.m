@@ -161,7 +161,7 @@ RCT_EXPORT_MODULE()
   
   // For iOS 10 data message (sent via FCM)
   dispatch_async(dispatch_get_main_queue(), ^{
-    [[FIRMessaging messaging] setRemoteMessageDelegate:self];
+    [[FIRMessaging messaging] setDelegate:self];
   });
 }
 
@@ -178,7 +178,7 @@ RCT_EXPORT_MODULE()
 
 - (void)disconnectFCM
 {
-  [[FIRMessaging messaging] disconnect];
+  [[FIRMessaging messaging] shouldEstablishDirectChannel];
   NSLog(@"Disconnected from FCM");
 }
 
@@ -245,11 +245,6 @@ RCT_EXPORT_METHOD(subscribeToTopic: (NSString*) topic)
 RCT_EXPORT_METHOD(unsubscribeFromTopic: (NSString*) topic)
 {
   [[FIRMessaging messaging] unsubscribeFromTopic:topic];
-}
-
-// Receive data message on iOS 10 devices.
-- (void)applicationReceivedRemoteMessage:(FIRMessagingRemoteMessage *)remoteMessage {
-  [_bridge.eventDispatcher sendDeviceEventWithName:FCMNotificationReceived body:[remoteMessage appData]];
 }
 
 RCT_EXPORT_METHOD(presentLocalNotification:(id)data resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
@@ -402,5 +397,18 @@ RCT_EXPORT_METHOD(send:(NSString*)senderId withPayload:(NSDictionary *)message)
   
   NSLog(@"sendDataMessageSuccess: %@", messageID);
 }
+
+#pragma mark - FIRMessagingDelegate
+	- (void)messaging:(nonnull FIRMessaging *)messaging didRefreshRegistrationToken:(nonnull NSString *)fcmToken {
+    // Note that this callback will be fired everytime a new token is generated, including the first
+    // time. So if you need to retrieve the token as soon as it is available this is where that
+    // should be done.
+    	NSLog(@"FCM registration token: %@", fcmToken);
+  	}
+
+	// Receive data message on iOS 10 devices.
+- (void)applicationReceivedRemoteMessage:(FIRMessagingRemoteMessage *)remoteMessage {
+  		[_bridge.eventDispatcher sendDeviceEventWithName:FCMNotificationReceived body:[remoteMessage appData]];
+  }
 
 @end
